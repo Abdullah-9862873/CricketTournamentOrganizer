@@ -1,19 +1,51 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { TournamentInput } from '@/types/tournament';
+import { useState, useCallback, useEffect } from 'react';
+import { TournamentInput, Match, BracketRound } from '@/types/tournament';
 import apiClient from '@/lib/api/client';
 import { useTournamentStore } from '@/store/tournament';
 import TournamentCard from './TournamentCard';
 import RoundRobinCard from './RoundRobinCard';
 import LeagueCard from './LeagueCard';
 
-export default function TournamentForm() {
-  const { setTournamentInput, setScheduledMatches, setBracketData, setCurrentRound, setLoading, setError, setSuccess, setRawOutput, scheduledMatches, bracketData, isLoading, error, success, rawOutput } =
+interface TournamentFormProps {
+  tournamentId?: string; // Used to reset state when switching tournaments
+  initialSchedule?: Match[];
+  initialBracket?: BracketRound[];
+  initialRawOutput?: any;
+  initialFormat?: 'round_robin' | 'league' | 'knockout';
+  onScheduleGenerated?: (data: {
+    format: 'round_robin' | 'league' | 'knockout';
+    schedule?: Match[];
+    bracket?: BracketRound[];
+    rawOutput?: any;
+  }) => void;
+}
+
+export default function TournamentForm({ tournamentId, initialSchedule, initialBracket, initialRawOutput, initialFormat, onScheduleGenerated }: TournamentFormProps) {
+  const { setTournamentInput, setScheduledMatches, setBracketData, setCurrentRound, setLoading, setError, setSuccess, setRawOutput, scheduledMatches, bracketData, isLoading, error, success, rawOutput, reset } =
     useTournamentStore();
 
+  // Load tournament-specific data when tournament changes
+  useEffect(() => {
+    // Reset and load this tournament's data
+    reset();
+    if (initialBracket && initialBracket.length > 0) {
+      setBracketData(initialBracket);
+    }
+    if (initialSchedule && initialSchedule.length > 0) {
+      setScheduledMatches(initialSchedule);
+    }
+    if (initialRawOutput) {
+      setRawOutput(initialRawOutput);
+    }
+    if (initialFormat) {
+      setFormat(initialFormat);
+    }
+  }, [tournamentId]);
+
   // Form States
-  const [format, setFormat] = useState<'round_robin' | 'league' | 'knockout'>('knockout');
+  const [format, setFormat] = useState<'round_robin' | 'league' | 'knockout'>(initialFormat || 'knockout');
   const [startDate, setStartDate] = useState('2026-02-20');
   const [teams, setTeams] = useState<string[]>(['India', 'Australia', 'England', 'Pakistan']);
   const [teamInput, setTeamInput] = useState('');
@@ -126,8 +158,20 @@ export default function TournamentForm() {
         setBracketData(response.data.schedule?.bracket || []);
         setScheduledMatches(response.data.schedule?.current_round_schedule || []);
         setCurrentRound(1);
+        // Notify parent component
+        onScheduleGenerated?.({
+          format,
+          bracket: response.data.schedule?.bracket || [],
+          rawOutput: response.data,
+        });
       } else {
         setScheduledMatches(Array.isArray(response.data.schedule) ? response.data.schedule : []);
+        // Notify parent component
+        onScheduleGenerated?.({
+          format,
+          schedule: Array.isArray(response.data.schedule) ? response.data.schedule : [],
+          rawOutput: response.data,
+        });
       }
       // store raw API response for exact output/debug
       setRawOutput(response.data);
@@ -601,7 +645,7 @@ export default function TournamentForm() {
         </form>
 
         {/* Results Pane */}
-        {(rawOutput || isLoading) && (
+        {(rawOutput || isLoading || bracketData.length > 0 || scheduledMatches.length > 0) && (
           <div className="mt-12 pt-12 border-t border-white/5 animate-in fade-in zoom-in-95 duration-500">
             <div className="flex items-center gap-3 mb-8">
               <h2 className="text-3xl font-bold text-white">Generated Blueprint</h2>
