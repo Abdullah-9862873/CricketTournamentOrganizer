@@ -3,6 +3,7 @@
 import React from 'react';
 import { BracketRound, Match } from '@/types/tournament';
 import KnockoutFlow from './KnockoutFlow';
+import LeagueFlow from './LeagueFlow';
 
 type Props = {
   bracketData: BracketRound[];
@@ -47,9 +48,13 @@ export default function TournamentCard({ bracketData, scheduledMatches, format, 
           <div className="p-2">
             <KnockoutFlow bracket={bracket} />
           </div>
+        ) : !status?.isLoading && (format === 'league' || format === 'round_robin') && scheduled && scheduled.length > 0 ? (
+          <div className="p-2">
+             <LeagueFlow matches={scheduled} />
+          </div>
         ) : !status?.isLoading && (
           <div className="p-12 text-center text-slate-500 text-sm">
-            No bracket data available. Try generating a schedule.
+            No schedule data available. Try generating a schedule.
           </div>
         )}
 

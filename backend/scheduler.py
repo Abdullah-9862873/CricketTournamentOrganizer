@@ -407,14 +407,24 @@ def generate_schedule(data: TournamentInput) -> Dict:
         
         # Prevent infinite loops
         if day_index > len(matches) * 10:
-            # Fallback: schedule remaining matches
+            # Fallback: schedule remaining matches spread across days
+            fallback_day = day_index
             for match in match_queue:
+                # Generate proper date for fallback
+                if start_date:
+                    fallback_date = start_date + timedelta(days=fallback_day)
+                    slot_idx = fallback_day % len(data.time_slots) if data.time_slots else 0
+                    fallback_slot = f"{fallback_date.strftime('%Y-%m-%d')} - {data.time_slots[slot_idx] if data.time_slots else 'TBD'}"
+                else:
+                    fallback_slot = f"Day {fallback_day + 1}"
+                
                 schedule.append({
                     "match": f"{match['team1']} vs {match['team2']}",
-                    "time_slot": f"Day{day_index + 1}",
+                    "time_slot": fallback_slot,
                     "venue": all_venues[venue_index % len(all_venues)]
                 })
                 venue_index += 1
+                fallback_day += 1  # Spread to different days
             break
 
     # For knockout format, also generate the full bracket structure
@@ -682,14 +692,24 @@ def generate_schedule(data: TournamentInput) -> Dict:
         
         # Prevent infinite loops
         if day_index > len(matches) * 10:
-            # Fallback: schedule remaining matches
+            # Fallback: schedule remaining matches spread across days
+            fallback_day = day_index
             for match in match_queue:
+                # Generate proper date for fallback
+                if start_date:
+                    fallback_date = start_date + timedelta(days=fallback_day)
+                    slot_idx = fallback_day % len(data.time_slots) if data.time_slots else 0
+                    fallback_slot = f"{fallback_date.strftime('%Y-%m-%d')} - {data.time_slots[slot_idx] if data.time_slots else 'TBD'}"
+                else:
+                    fallback_slot = f"Day {fallback_day + 1}"
+                
                 schedule.append({
                     "match": f"{match['team1']} vs {match['team2']}",
-                    "time_slot": f"Day{day_index + 1}",
+                    "time_slot": fallback_slot,
                     "venue": all_venues[venue_index % len(all_venues)]
                 })
                 venue_index += 1
+                fallback_day += 1  # Spread to different days
             break
 
     return schedule
