@@ -176,7 +176,7 @@ export default function TournamentForm() {
     if (preset === 'psl_league') {
       setFormat('knockout');
       setStartDate('2026-02-14');
-      setTeams(['Lahore Qalandars', 'Karachi Kings', 'Islamabad United', 'Peshawar Zalmi', 'Multan Sultans', 'Quetta Gladiators']);
+      setTeams(['Lahore Qalandars', 'Karachi Kings', 'Islamabad United', 'Peshawar Zalmi', 'Multan Sultans', 'Quetta Gladiators','Hyderabad','Sialkot']);
       setVenues(['Gaddafi Stadium', 'National Bank Arena', 'Multan Cricket Stadium', 'Pindi Cricket Stadium']);
       setTimeSlots(['Afternoon (2 PM)', 'Evening Blast (7 PM)']);
       setBlackoutDates([]);
