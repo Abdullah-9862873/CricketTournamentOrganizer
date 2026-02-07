@@ -46,7 +46,11 @@ export default function TournamentForm({ tournamentId, initialSchedule, initialB
 
   // Form States
   const [format, setFormat] = useState<'round_robin' | 'league' | 'knockout'>(initialFormat || 'knockout');
-  const [startDate, setStartDate] = useState('2026-02-20');
+  const [startDate, setStartDate] = useState(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  });
   const [teams, setTeams] = useState<string[]>(['India', 'Australia', 'England', 'Pakistan']);
   const [teamInput, setTeamInput] = useState('');
   const [venues, setVenues] = useState<string[]>(['MCG Melbourne', 'SCG Sydney']);
@@ -219,13 +223,16 @@ export default function TournamentForm({ tournamentId, initialSchedule, initialB
   const applyPreset = useCallback((preset: 'psl_league') => {
     if (preset === 'psl_league') {
       setFormat('knockout');
-      setStartDate('2026-02-14');
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      alert(tomorrow.toISOString().split('T')[0]);
+      setStartDate(tomorrow.toISOString().split('T')[0]);
       setTeams(['Lahore Qalandars', 'Karachi Kings', 'Islamabad United', 'Peshawar Zalmi', 'Multan Sultans', 'Quetta Gladiators','Hyderabad','Sialkot']);
       setVenues(['Gaddafi Stadium', 'National Bank Arena', 'Multan Cricket Stadium', 'Pindi Cricket Stadium']);
       setTimeSlots(['Afternoon (2 PM)', 'Evening Blast (7 PM)']);
       setBlackoutDates([]);
       setRestGap(1);
-      setMaxMatchesPerDay(2);
+      setMaxMatchesPerDay(1);
     }
   }, [setFormat, setStartDate, setTeams, setVenues, setTimeSlots, setBlackoutDates, setRestGap, setMaxMatchesPerDay]);
 
@@ -271,7 +278,7 @@ export default function TournamentForm({ tournamentId, initialSchedule, initialB
         </div>
 
         {/* Top Control Bar */}
-        <div className="bg-[#111] border border-slate-800 rounded-xl p-4 mb-6 backdrop-blur-xl">
+        <div className="bg-[#111] border border-slate-800 rounded-xl p-4 mb-6 backdrop-blur-xl relative z-20">
           <div className="flex flex-wrap items-center gap-16">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-slate-500">FORMAT</span>
@@ -309,11 +316,11 @@ export default function TournamentForm({ tournamentId, initialSchedule, initialB
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="bg-[#0a0a0a] border border-slate-800 rounded-lg px-4 py-1.5 text-sm text-white focus:outline-none focus:border-slate-600 transition"
+                className="bg-[#0a0a0a] border border-slate-800 rounded-lg px-4 py-1.5 text-sm text-white focus:outline-none focus:border-slate-600 transition [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:hover:opacity-100"
               />
             </div>
 
-            <div className="relative">
+            <div className={`relative ${showSettings ? 'z-[1000]' : ''}`}>
               <button
                 type="button"
                 onClick={() => setShowSettings(!showSettings)}
@@ -332,7 +339,7 @@ export default function TournamentForm({ tournamentId, initialSchedule, initialB
               </button>
 
               {showSettings && (
-                <div className="absolute top-full left-0 mt-3 w-[350px] bg-[#111] border border-slate-800 rounded-xl shadow-2xl z-50 p-6 animate-in fade-in zoom-in-95 duration-200 origin-top-left">
+                <div className="absolute top-full left-0 mt-3 w-[350px] bg-[#111] border border-slate-800 rounded-xl shadow-2xl z-[999] p-6 animate-in fade-in zoom-in-95 duration-200 origin-top-left">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-base font-semibold text-white">Scheduling Settings</h3>
                     <button onClick={() => setShowSettings(false)} className="text-slate-500 hover:text-white">×</button>
